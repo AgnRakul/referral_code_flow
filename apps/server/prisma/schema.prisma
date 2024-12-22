@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  email            String?  @unique
+  name             String?
+  referralCode     String?  @unique
+  referredBy       String?
+  googleId         String?  @unique
+  twitterId        String?  @unique
+  appleId          String?  @unique
+  walletAddress    String?  @unique
+  hasPrimaryAuth   Boolean  @default(false)
+  hasSecondaryAuth Boolean  @default(false)
+  points           Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  referralsMade     Referral[]         @relation("Referrer")
+  referralsReceived Referral[]         @relation("Referee")
+  pointHistory      PointTransaction[]
+  tokens            Token[]
+
+  @@index([referralCode])
+  @@index([referredBy])
+}
+
+model Referral {
+  id            Int       @id @default(autoincrement())
+  code          String
+  referrerId    Int
+  refereeId     Int
+  isCompleted   Boolean   @default(false)
+  pointsAwarded Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  referrer User @relation("Referrer", fields: [referrerId], references: [id])
+  referee  User @relation("Referee", fields: [refereeId], references: [id])
+
+  @@index([code])
+  @@index([referrerId])
+  @@index([refereeId])
+}
+
+model PointTransaction {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  amount      Int
+  description String
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Token {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  accessToken  String   @unique
+  refreshToken String   @unique
+  isValid      Boolean  @default(true)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id]) // Relation to User model
+}
+
+enum TokenProvider {
+  GOOGLE
+  TWITTER
+  APPLE
+  WALLET
+}
