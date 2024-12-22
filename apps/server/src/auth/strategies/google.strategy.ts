@@ -10,20 +10,25 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
       scope: ['profile', 'email'],
+      passReqToCallback: true,
     });
   }
 
   async validate(
+    req: any,
     _: string,
     __: string,
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
+    const state = req.query.state ? JSON.parse(req.query.state) : {};
     const { id, emails, displayName } = profile;
+
     const user = {
-      id: id,
+      id,
       email: emails[0].value,
       name: displayName,
+      referralCode: state.referralCode,
     };
 
     done(null, user);

@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ReferralService } from './referral.service';
-import { ReferralController } from './referral.controller';
 import { PrismaModule } from 'prisma/prisma.module';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
 import { JwtModule } from '@nestjs/jwt';
+import { UserModel } from './user.model';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     PrismaModule,
   ],
-  controllers: [ReferralController],
-  providers: [ReferralService],
+  controllers: [UserController],
+  providers: [UserService, UserModel],
 })
-export class ReferralModule {}
+export class UserModule {}

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Dashboard } from './view/dashboard';
 import { Login } from './view/login';
 import { AuthWrapper } from './wrappers/AuthWrapper';
+import { Referrals } from './view/referral';
+import { Score } from './view/score';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,6 +28,24 @@ const App: React.FC = () => {
             element={
               <PrivateRoute>
                 <Dashboard onLogout={handleLogout} />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/referrals"
+            element={
+              <PrivateRoute>
+                <Referrals />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/score"
+            element={
+              <PrivateRoute>
+                <Score />
               </PrivateRoute>
             }
           />

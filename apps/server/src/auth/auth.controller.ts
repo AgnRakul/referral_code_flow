@@ -20,7 +20,6 @@ export class AuthController {
     private readonly jwtService: JwtService,
   ) {}
 
-  // Logout route to clear cookies
   @Post('logout')
   logout(@Res() res: Response) {
     res.clearCookie('accessToken', { httpOnly: true, sameSite: 'strict' });
@@ -37,16 +36,14 @@ export class AuthController {
     }
 
     try {
-      // Verify the token using JwtService
       const payload = this.jwtService.verify(token);
-      console.log('Decoded Payload:', payload); // Log the payload for debugging
+      console.log('Decoded Payload:', payload);
 
-      // Send only user-related information in the response (avoiding circular structure)
       return {
         message: 'Authentication validated successfully',
         user: {
-          email: payload.email, // Return specific details from the payload
-          userId: payload.sub, // Return the userId or any relevant information
+          email: payload.email,
+          userId: payload.sub,
         },
         success: true,
       };
@@ -57,19 +54,24 @@ export class AuthController {
   }
 
   @Get('google')
-  @UseGuards(AuthGuard('google'))
-  googleLogin() {
-    return 'Redirecting to Google for authentication...';
-  }
-
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleCallback(
-    @Req() req: any,
+  googleLogin(
     @Query('referralCode') referralCode: string,
     @Res() res: Response,
   ) {
+    const state = JSON.stringify({ referralCode });
+
+    const googleAuthURL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${process.env.GOOGLE_CALLBACK_URL}&response_type=code&scope=profile%20email&state=${encodeURIComponent(
+      state,
+    )}`;
+
+    res.redirect(googleAuthURL);
+  }
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: any, @Res() res: Response) {
     try {
+      const referralCode = req.user.referralCode; // Access referral code
+
       const { accessToken, refreshToken } = await this.authService.register(
         req.user,
         'GOOGLE',
@@ -80,7 +82,7 @@ export class AuthController {
       res.cookie('accessToken', accessToken, {
         httpOnly: true,
         sameSite: 'strict',
-        maxAge: 8 * 60 * 60 * 1000, // 8 hours in milliseconds
+        maxAge: 8 * 60 * 60 * 1000, // 8 hours
       });
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,

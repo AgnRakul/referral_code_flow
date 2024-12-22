@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAxios } from '../../hooks/useAxios';
 import { LogOut, User, Link, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
   const axios = useAxios();
-  const [userName, setUserName] = useState(null);
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState<any>({});
   const [referralCode, setReferralCode] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -12,7 +14,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
     const fetchUserName = async () => {
       try {
         const response = await axios.get('/user');
-        setUserName(response.data.name);
+        setUserData(response.data.data);
       } catch (error) {
         console.error('Error fetching user name:', error);
       }
@@ -23,7 +25,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
 
   const handleGenerateReferralCode = async () => {
     try {
-      const response = await axios.post('/api/referral/generate', {});
+      const response = await axios.get('/referral/generate', {});
       setReferralCode(response.data.referralCode);
     } catch (error) {
       console.error('Error generating referral code:', error);
@@ -37,6 +39,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
       if (response.status === 200) {
         setTimeout(() => {
           onLogout();
+          sessionStorage.removeItem('isAuthenticated');
           window.location.href = '/';
         }, 2000);
       }
@@ -60,7 +63,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
                 <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                   <User size={20} />
                 </div>
-                <span>{userName || 'User'}</span>
+                <span>{userData.name || 'User'}</span>
               </button>
 
               {showDropdown && (
@@ -69,9 +72,13 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
                     <LogOut size={16} className="mr-2" />
                     Logout
                   </button>
-                  <button className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <button onClick={() => navigate('/referrals')} className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     <Settings size={16} className="mr-2" />
-                    Settings
+                    Referrals
+                  </button>
+                  <button onClick={() => navigate('/score')} className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Settings size={16} className="mr-2" />
+                    Score
                   </button>
                 </div>
               )}
@@ -81,41 +88,26 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white shadow rounded-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="">
             {/* Referral Section */}
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-4">Referral Program</h3>
               <button onClick={handleGenerateReferralCode} className="px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition-colors">
                 Generate Referral Code
               </button>
-              {referralCode && (
+              {(userData.referralCode || referralCode) && (
                 <div className="mt-4 p-4 bg-white rounded border border-gray-200">
                   <p className="text-sm text-gray-600">Your Referral Code:</p>
                   <div className="flex items-center space-x-2 mt-1">
-                    <span className="font-mono text-lg font-bold">{referralCode}</span>
-                    <button onClick={() => navigator.clipboard.writeText(referralCode)} className="text-blue-600 hover:text-blue-700">
+                    <span className="font-mono text-lg font-bold">{`${import.meta.env.VITE_REACT_APP_URL}?referralCode=${userData.referralCode || referralCode}`}</span>
+                    <button onClick={() => navigator.clipboard.writeText(`${import.meta.env.VITE_REACT_APP_URL}?referralCode=${userData.referralCode || referralCode}`)} className="text-blue-600 hover:text-blue-700">
                       <Link size={16} />
                     </button>
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Stats Section */}
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded shadow">
-                  <p className="text-sm text-gray-600">Total Referrals</p>
-                  <p className="text-2xl font-bold">0</p>
-                </div>
-                <div className="bg-white p-4 rounded shadow">
-                  <p className="text-sm text-gray-600">Active Users</p>
-                  <p className="text-2xl font-bold">1</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

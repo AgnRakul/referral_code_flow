@@ -1,34 +1,24 @@
-import { Controller, Get, UseGuards, Req, Query } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { ReferralService } from './referral.service';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+
+import { UserGuard } from 'src/common/guards/user.guard';
 
 @Controller('referral')
 export class ReferralController {
   constructor(private readonly referralService: ReferralService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get('generate')
+  @UseGuards(UserGuard)
   async generateReferralCode(@Req() req: any) {
-    const userId = req.user.sub;
-    const referralCode =
-      await this.referralService.generateReferralCode(userId);
+    const referralCode = await this.referralService.generateReferralCode(
+      req.user.id,
+    );
     return { referralCode };
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('code')
-  async getReferralCode(@Req() req: any) {
-    const userId = req.user.sub;
-    const referralCode = await this.referralService.getReferralCode(userId);
-    return { referralCode };
-  }
-
-  @Get('validate')
-  async validateReferralCode(@Query('code') code: string) {
-    const isValid = await this.referralService.validateReferralCode(code);
-    if (!isValid) {
-      throw new Error('Invalid referral code');
-    }
-    return { valid: isValid };
+  @Get('list')
+  @UseGuards(UserGuard)
+  async getReferredUserList(@Req() req: any) {
+    return await this.referralService.getReferredUserRecord(req.user.id);
   }
 }

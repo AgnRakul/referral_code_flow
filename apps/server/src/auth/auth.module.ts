@@ -6,6 +6,10 @@ import { AuthController } from './auth.controller';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { PrismaModule } from 'prisma/prisma.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { UserModel } from 'src/user/user.model';
+import { TokenService } from './token.service';
+import { ReferralService } from 'src/referral/referral.service';
+
 // import { TwitterStrategy } from './strategies/twitter.strategy';
 
 @Module({
@@ -17,7 +21,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     }),
     PrismaModule,
   ],
-  providers: [AuthService, GoogleStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    GoogleStrategy,
+    JwtStrategy,
+    UserModel,
+    TokenService,
+    ReferralService,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

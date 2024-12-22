@@ -1,98 +1,71 @@
 import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'prisma/prisma.service';
+import { ReferralService } from 'src/referral/referral.service';
+
+import { UserModel } from 'src/user/user.model';
+import { TokenService, TokenPair } from './token.service';
+
+type AuthProvider = 'GOOGLE' | 'TWITTER' | 'APPLE' | 'WALLET';
+
+interface AuthUser {
+  email: string;
+  id: string;
+  [key: string]: any;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly jwtService: JwtService,
-    private readonly prisma: PrismaService,
+    private readonly userModel: UserModel,
+    private readonly referralService: ReferralService,
+    private readonly tokenService: TokenService,
   ) {}
 
   async register(
-    user: any,
-    provider: 'GOOGLE' | 'TWITTER' | 'APPLE' | 'WALLET',
-    referralCode: string | undefined,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    const { email, id } = user;
+    user: AuthUser,
+    provider: AuthProvider,
+    referralCode?: string,
+  ): Promise<TokenPair> {
+    const existingUser = await this.handleUserRegistration(user, provider);
 
-    let existingUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      const updateData: any = {};
-      if (provider === 'GOOGLE' && !existingUser.googleId) {
-        updateData.googleId = id;
-      }
-      if (Object.keys(updateData).length > 0) {
-        existingUser = await this.prisma.user.update({
-          where: { email },
-          data: updateData,
-        });
-      }
-    } else {
-      existingUser = await this.prisma.user.create({
-        data: {
-          email,
-          [`${provider.toLowerCase()}Id`]: id,
-          name: user.name || null,
-          hasPrimaryAuth: true,
-        },
-      });
-
-      if (referralCode) {
-        const referrer = await this.prisma.user.findUnique({
-          where: { referralCode },
-        });
-
-        if (referrer) {
-          const pointsToAward = parseInt(
-            process.env.REFERRAL_POINTS || '10',
-            10,
-          );
-          await this.prisma.user.update({
-            where: { id: referrer.id },
-            data: { points: referrer.points + pointsToAward },
-          });
-
-          await this.prisma.referral.create({
-            data: {
-              referrerId: referrer.id,
-              refereeId: existingUser.id,
-              code: referralCode,
-              isCompleted: true,
-              pointsAwarded: true,
-              completedAt: new Date(),
-            },
-          });
-        }
-      }
+    if (referralCode) {
+      await this.referralService.handleReferral(existingUser.id, referralCode);
     }
 
-    const payload = { email: existingUser.email, sub: existingUser.id };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-
-    await this.prisma.token.upsert({
-      where: { userId: existingUser.id },
-      update: {
-        refreshToken,
-        accessToken,
-        isValid: true,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-      create: {
-        user: {
-          connect: { id: existingUser.id },
-        },
-        accessToken,
-        refreshToken,
-        isValid: true,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
+    const tokens = this.tokenService.generateTokens({
+      email: existingUser.email,
+      sub: existingUser.id,
     });
 
-    return { accessToken, refreshToken };
+    await this.tokenService.saveTokens(existingUser.id, tokens);
+
+    return tokens;
+  }
+
+  private async handleUserRegistration(user: AuthUser, provider: AuthProvider) {
+    const existingUser = await this.userModel.checkUserExists(user.email);
+
+    if (existingUser) {
+      return this.updateExistingUser(existingUser, user, provider);
+    }
+
+    return this.userModel.createUser(user.email, provider, user, user.id);
+  }
+
+  private async updateExistingUser(
+    existingUser: any,
+    user: AuthUser,
+    provider: AuthProvider,
+  ) {
+    const updateData: any = {};
+
+    if (provider === 'GOOGLE' && !existingUser.googleId) {
+      updateData.googleId = user.id;
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      return this.userModel.updateUser(user.email, updateData);
+    }
+
+    return existingUser;
   }
 }

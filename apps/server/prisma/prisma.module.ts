@@ -3,6 +3,7 @@ import { PrismaService } from './prisma.service';
 
 @Global()
 @Module({
+  imports: [], // Ensure JwtService is imported
   providers: [PrismaService],
   exports: [PrismaService],
 })
