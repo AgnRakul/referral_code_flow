@@ -16,13 +16,11 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children, onAuthStatusChange 
 
   useEffect(() => {
     const validateAuth = () => {
-      // Check if we're on the home page
       if (location.pathname === '/') {
         setLoading(false);
         return;
       }
 
-      // Check session storage first
       const storedAuthStatus = sessionStorage.getItem(SESSION_AUTH_KEY);
 
       if (storedAuthStatus !== null) {
@@ -32,7 +30,6 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children, onAuthStatusChange 
         return;
       }
 
-      // Only if no stored status, make the API call
       const checkAuth = async () => {
         try {
           const response = await axiosInstance.get('/auth/validate');

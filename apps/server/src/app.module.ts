@@ -9,7 +9,7 @@ import { UserModule } from './user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Make .env variables globally accessible
+      isGlobal: true,
     }),
     AuthModule,
     PrismaModule,

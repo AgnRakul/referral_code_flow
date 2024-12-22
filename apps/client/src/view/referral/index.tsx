@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import { User, CheckCircle2, XCircle, Link as LinkIcon } from 'lucide-react';
+import { User, CheckCircle2, XCircle } from 'lucide-react';
 import { useAxios } from '../../hooks/useAxios';
 
 const Referrals = () => {
@@ -84,7 +84,6 @@ const Referrals = () => {
         </div>
       </div>
 
-      {/* Statistics Card */}
       <div className="bg-white rounded-lg shadow-md">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-800">Referral Statistics</h2>
