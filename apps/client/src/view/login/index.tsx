@@ -1,4 +1,4 @@
-import { Apple, ChevronRight, Sigma, Twitter, UserCircle2, Wallet } from 'lucide-react';
+import { ChevronRight, Sigma, UserCircle2 } from 'lucide-react';
 import { useState } from 'react';
 
 const Login = () => {
@@ -11,19 +11,6 @@ const Login = () => {
   const handleAuth = (provider: string) => {
     setIsLoading(true);
     window.location.href = `${backendUrl}/auth/${provider}?referralCode=${referralCode || ''}`;
-  };
-
-  const handleWalletConnect = async () => {
-    setIsLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      alert('Wallet connection feature would go here');
-    } catch (error) {
-      console.error('Wallet connection error:', error);
-      alert('Failed to connect wallet. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const AuthButton = ({ provider, icon: Icon, label, onClick }: { provider: string; icon: React.ComponentType<any>; label: string; onClick?: () => void }) => (
@@ -49,9 +36,8 @@ const Login = () => {
 
         <div className="mt-8 space-y-4">
           <AuthButton provider="google" icon={Sigma} label="Continue with Google" />
-          <AuthButton provider="twitter" icon={Twitter} label="Continue with Twitter" />
-          <AuthButton provider="apple" icon={Apple} label="Continue with Apple" />
-          <AuthButton provider="wallet" icon={Wallet} label="Connect Wallet" onClick={handleWalletConnect} />
+          {/* <AuthButton provider="twitter" icon={Twitter} label="Continue with Twitter" />
+          <AuthButton provider="apple" icon={Apple} label="Continue with Apple" /> */}
         </div>
 
         {/* Terms */}

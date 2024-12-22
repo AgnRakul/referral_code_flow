@@ -5,6 +5,7 @@ import { Login } from './view/login';
 import { AuthWrapper } from './wrappers/AuthWrapper';
 import { Referrals } from './view/referral';
 import { Score } from './view/score';
+import { MetaMaskWrapper } from './wrappers/MetaMaskWrapper';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,7 +37,9 @@ const App: React.FC = () => {
             path="/referrals"
             element={
               <PrivateRoute>
-                <Referrals />
+                <MetaMaskWrapper>
+                  <Referrals />
+                </MetaMaskWrapper>
               </PrivateRoute>
             }
           />

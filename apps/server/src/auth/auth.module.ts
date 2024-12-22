@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserModel } from 'src/user/user.model';
 import { TokenService } from './token.service';
 import { ReferralService } from 'src/referral/referral.service';
+import { MetaMaskAuthService } from './metamask.service';
 
 // import { TwitterStrategy } from './strategies/twitter.strategy';
 
@@ -28,6 +29,7 @@ import { ReferralService } from 'src/referral/referral.service';
     UserModel,
     TokenService,
     ReferralService,
+    MetaMaskAuthService,
   ],
   controllers: [AuthController],
 })

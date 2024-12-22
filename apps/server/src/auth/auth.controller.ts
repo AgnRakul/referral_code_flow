@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
@@ -12,12 +13,15 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Response, Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { MetaMaskAuthService } from './metamask.service';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
+    private readonly metamaskAuthService: MetaMaskAuthService,
   ) {}
 
   @Post('logout')
@@ -98,6 +102,20 @@ export class AuthController {
         .status(500)
         .send({ message: 'An error occurred during login.' });
     }
+  }
+
+  @Post('metamask-authenticate')
+  @UseGuards(JwtAuthGuard)
+  async authenticateWithMetaMask(
+    @Body() body: { walletAddress: string },
+    @Req() req: any,
+  ) {
+    const { walletAddress } = body;
+
+    return await this.metamaskAuthService.storeMetaMaskAddress(
+      req.user.userId,
+      walletAddress,
+    );
   }
 
   // @Get('twitter')
