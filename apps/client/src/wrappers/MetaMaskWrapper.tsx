@@ -70,13 +70,13 @@ const MetaMaskWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) 
     }
   };
 
-  if (isConnectToDiff) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-600">{isConnectToDiff}</p>
-      </div>
-    );
-  }
+  // if (isConnectToDiff) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <p className="text-gray-600">{isConnectToDiff}</p>
+  //     </div>
+  //   );
+  // }
 
   if (loading) {
     return (

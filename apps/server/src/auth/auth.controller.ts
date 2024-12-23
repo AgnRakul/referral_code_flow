@@ -43,6 +43,8 @@ export class AuthController {
       const payload = this.jwtService.verify(token);
       console.log('Decoded Payload:', payload);
 
+      // I need to check in database that the user is tehre with the payload.sub
+
       return {
         message: 'Authentication validated successfully',
         user: {
@@ -70,6 +72,7 @@ export class AuthController {
 
     res.redirect(googleAuthURL);
   }
+
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req: any, @Res() res: Response) {
@@ -82,7 +85,6 @@ export class AuthController {
         referralCode,
       );
 
-      // Set cookies for all environments
       res.cookie('accessToken', accessToken, {
         httpOnly: true,
         sameSite: 'strict',

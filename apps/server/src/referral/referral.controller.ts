@@ -18,7 +18,7 @@ export class ReferralController {
   }
 
   @Get('list')
-  @UseGuards(UserGuard, MetaMaskGuard)
+  @UseGuards(UserGuard)
   async getReferredUserList(@Req() req: any) {
     return await this.referralService.getReferredUserRecord(req.user.id);
   }
